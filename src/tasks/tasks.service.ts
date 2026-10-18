@@ -13,14 +13,50 @@ export interface UpdateTaskInput {
   status?: TaskStatus;
 }
 
+export interface ListTasksOptions {
+  page: number;
+  limit: number;
+  status?: TaskStatus;
+}
+
+export interface PaginatedTasks {
+  data: Task[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 @Injectable()
 export class TasksService {
   private readonly tasks: Task[] = [];
   private nextId = 1;
 
-  findAll(): Task[] {
-    return [...this.tasks];
+  findAll(options?: ListTasksOptions): Task[] | PaginatedTasks {
+  const filteredTasks = options?.status
+    ? this.tasks.filter((task) => task.status === options.status)
+    : this.tasks;
+
+  if (!options) {
+    return filteredTasks;
   }
+
+  const total = filteredTasks.length;
+  const startIndex = (options.page - 1) * options.limit;
+  const data = filteredTasks.slice(startIndex, startIndex + options.limit);
+
+  return {
+    data: [...data],
+    meta: {
+      page: options.page,
+      limit: options.limit,
+      total,
+      totalPages: Math.ceil(total / options.limit),
+    },
+  };
+}
 
   findOne(id: number): Task {
     const task = this.tasks.find((item) => item.id === id);

@@ -7,20 +7,34 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { ListTasksQueryDto } from './dto/list-tasks-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './task.model';
-import { TasksService } from './tasks.service';
+import { PaginatedTasks, TasksService } from './tasks.service';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll(): Task[] {
+findAll(@Query() query: ListTasksQueryDto) {
+  if (
+    query.page === undefined &&
+    query.limit === undefined &&
+    query.status === undefined
+  ) {
     return this.tasksService.findAll();
   }
+
+  return this.tasksService.findAll({
+    page: query.page,
+    limit: query.limit,
+    status: query.status,
+  });
+}
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Task {
