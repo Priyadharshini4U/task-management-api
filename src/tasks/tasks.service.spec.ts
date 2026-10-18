@@ -49,17 +49,25 @@ describe('TasksService', () => {
     expect(() => service.findOne(999)).toThrow(NotFoundException);
   });
 
-  it('updates the updatedAt timestamp when a task changes', () => {
-    const task = service.create({ title: 'Original title' });
-    const originalUpdatedAt = task.updatedAt;
+  it('updates the updatedAt timestamp', () => {
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date('2025-01-01T10:00:00.000Z'));
 
-    const updated = service.update(task.id, { title: 'Updated title' });
+  const task = service.create({ title: 'Original task' });
+  const originalCreatedAt = task.createdAt;
+  const originalUpdatedAt = task.updatedAt;
 
-    expect(updated.title).toBe('Updated title');
-    expect(updated.updatedAt).toBeDefined();
-    expect(updated.updatedAt).not.toBe('');
-    expect(updated.updatedAt >= originalUpdatedAt).toBe(true);
-  });
+  jest.setSystemTime(new Date('2025-01-01T10:01:00.000Z'));
+
+  const updated = service.update(task.id, { title: 'Updated title' });
+
+  expect(updated.title).toBe('Updated title');
+  expect(updated.updatedAt).not.toBe(originalUpdatedAt);
+  expect(updated.updatedAt).toBe('2025-01-01T10:01:00.000Z');
+  expect(updated.createdAt).toBe(originalCreatedAt);
+
+  jest.useRealTimers();
+});
 
   it('throws NotFoundException when deleting a missing task', () => {
     expect(() => service.remove(404)).toThrow(NotFoundException);
