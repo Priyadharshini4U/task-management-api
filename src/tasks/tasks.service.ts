@@ -34,24 +34,29 @@ export class TasksService {
   private readonly tasks: Task[] = [];
   private nextId = 1;
 
-  findAll(options: ListTasksOptions): PaginatedTasks {
-    const filteredTasks = options.status
-      ? this.tasks.filter((task) => task.status === options.status)
-      : this.tasks;
-    const total = filteredTasks.length;
-    const startIndex = (options.page - 1) * options.limit;
-    const data = filteredTasks.slice(startIndex, startIndex + options.limit);
+  findAll(options?: ListTasksOptions): Task[] | PaginatedTasks {
+  const filteredTasks = options?.status
+    ? this.tasks.filter((task) => task.status === options.status)
+    : this.tasks;
 
-    return {
-      data: [...data],
-      meta: {
-        page: options.page,
-        limit: options.limit,
-        total,
-        totalPages: Math.ceil(total / options.limit),
-      },
-    };
+  if (!options) {
+    return filteredTasks;
   }
+
+  const total = filteredTasks.length;
+  const startIndex = (options.page - 1) * options.limit;
+  const data = filteredTasks.slice(startIndex, startIndex + options.limit);
+
+  return {
+    data: [...data],
+    meta: {
+      page: options.page,
+      limit: options.limit,
+      total,
+      totalPages: Math.ceil(total / options.limit),
+    },
+  };
+}
 
   findOne(id: number): Task {
     const task = this.tasks.find((item) => item.id === id);

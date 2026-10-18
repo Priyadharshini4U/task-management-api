@@ -20,13 +20,21 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll(@Query() query: ListTasksQueryDto): PaginatedTasks {
-    return this.tasksService.findAll({
-      page: query.page,
-      limit: query.limit,
-      status: query.status,
-    });
+findAll(@Query() query: ListTasksQueryDto) {
+  if (
+    query.page === undefined &&
+    query.limit === undefined &&
+    query.status === undefined
+  ) {
+    return this.tasksService.findAll();
   }
+
+  return this.tasksService.findAll({
+    page: query.page,
+    limit: query.limit,
+    status: query.status,
+  });
+}
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Task {
